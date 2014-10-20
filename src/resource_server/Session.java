@@ -8,48 +8,48 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.Socket;
 
-import resource_server.Exceptions.SessionDoesNotExistException;
+import resource_server.SessionsManager.ISessionsManager;
 
 public class Session implements ISession
 {
 	private BufferedReader bufferedReader;
-	
-	private int id;
-	
-	private PrintWriter printWriter;
-	
-	private ISessionsManager sessionsManager;
 
-	private Socket socket;
+	private int id;
+
+	private PrintWriter printWriter;
+
+	private ISessionsManager sessionsManager;
 	
+	private Socket socket;
+
 	public Session(int id, Socket socket, ISessionsManager sessionsManager)
-			throws IOException
+		throws IOException
 	{
 		this.id = id;
 		this.socket = socket;
 		this.sessionsManager = sessionsManager;
-		
+
 		this.bufferedReader = new BufferedReader(new InputStreamReader(
 			this.socket.getInputStream()));
-		
+
 		this.printWriter = new PrintWriter(new BufferedWriter(
 			new OutputStreamWriter(this.socket.getOutputStream())), true);
 	}
-	
+
 	@Override
 	public void close() throws IOException
 	{
 		this.socket.close();
-		
+
 		System.out.println("Socket has been closed: " + this.socket);
 	}
-	
+
 	@Override
 	public int getId()
 	{
 		return this.id;
 	}
-	
+
 	@Override
 	public void run()
 	{
@@ -58,20 +58,21 @@ public class Session implements ISession
 			while (true)
 			{
 				String str = this.bufferedReader.readLine();
-				
+
 				if (str == null)
 				{
 					break;
 				}
-				
+
 				System.out.println(String.format("Client #%1$d: %2$s", this.id,
 					str));
-				
+
 				StringBuilder stringBuilder = new StringBuilder();
-				
+
 				if (str.equals("GET_ALL_SESSIONS"))
 				{
-					for (ISession session : this.sessionsManager.getOpenedSessions())
+					for (ISession session : this.sessionsManager
+							.getOpenedSessions())
 					{
 						stringBuilder.append(String.format("Session #%1$d; ",
 							session.getId()));
@@ -82,9 +83,9 @@ public class Session implements ISession
 					stringBuilder.append(String.format(
 						"I got your message: \"%1$s\"", str));
 				}
-				
-				String message = stringBuilder.toString();
 
+				String message = stringBuilder.toString();
+				
 				this.send(message);
 			}
 		}
@@ -105,7 +106,7 @@ public class Session implements ISession
 			}
 		}
 	}
-	
+
 	private void send(String message)
 	{
 		this.printWriter.println(message);

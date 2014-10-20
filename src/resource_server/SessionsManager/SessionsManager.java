@@ -1,4 +1,4 @@
-package resource_server;
+package resource_server.SessionsManager;
 
 import java.io.IOException;
 import java.net.Socket;
@@ -6,16 +6,15 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import com.sun.org.apache.xerces.internal.impl.dv.util.Base64;
-import com.sun.swing.internal.plaf.basic.resources.basic;
-
+import resource_server.ISession;
+import resource_server.Session;
 import resource_server.Exceptions.FailedToCloseSessionException;
 import resource_server.Exceptions.FailedToOpenSessionFromSocketException;
 import resource_server.Exceptions.SessionAlreadyExistsException;
 import resource_server.Exceptions.SessionDoesNotExistException;
 import resource_server.Helpers.Guard;
 
-public class SessionsManager implements ISessionsManager
+public class SessionsManager implements IServerSessionsManager
 {
 	private int nextSessionId;
 	
