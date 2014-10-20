@@ -62,7 +62,10 @@ public class Server implements Closeable
 				this.sessionsManager.closeSession(session);
 			}
 			
-			this.serverSocket.close();
+			if (this.serverSocket != null)
+			{
+				this.serverSocket.close();
+			}
 		}
 		catch (Exception e)
 		{
