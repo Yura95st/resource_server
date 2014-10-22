@@ -55,6 +55,8 @@ public class Session implements ISession
 	{
 		try
 		{
+			this.send("Hi, there!");
+			
 			while (true)
 			{
 				String str = this.bufferedReader.readLine();
@@ -69,7 +71,7 @@ public class Session implements ISession
 
 				StringBuilder stringBuilder = new StringBuilder();
 
-				if (str.equals("GET_ALL_SESSIONS"))
+				if (str.equalsIgnoreCase("get_all_sessions"))
 				{
 					for (ISession session : this.sessionsManager
 							.getOpenedSessions())
