@@ -51,6 +51,7 @@ public class ClientInputHandler implements Runnable
 
 				case Server_SessionsList:
 				{
+					System.out.println("Server: Here are the list of opened sessions:");
 					System.out
 							.println(command
 									.getParameterValue(CommandParameterName.SessionsList));

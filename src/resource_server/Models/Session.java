@@ -164,7 +164,6 @@ public class Session implements ISession
 		{
 			stringBuilder.append(String.format("Session #%1$d; ",
 				session.getId()));
-			stringBuilder.append(System.getProperty("line.separator"));
 		}
 
 		String parameterValue = stringBuilder.toString().trim();
