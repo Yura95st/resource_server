@@ -8,9 +8,12 @@ public interface ICommand
 {
 	CommandCode getCode();
 	
-	String getParameterValue(CommandParameterName name) throws CommandParameterNameNotFoundException;
+	String getParameterValue(CommandParameterName name)
+			throws CommandParameterNameNotFoundException;
 	
-	void setParameter(CommandParameterName name, String value);
+	void setCode(CommandCode code);
 
+	void setParameter(CommandParameterName name, String value);
+	
 	String toXML();
 }

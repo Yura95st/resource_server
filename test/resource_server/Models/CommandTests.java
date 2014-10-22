@@ -13,7 +13,7 @@ public class CommandTests
 {
 	private ICommand command;
 
-	CommandParameterName parameterName = CommandParameterName.Foo;
+	CommandParameterName parameterName = CommandParameterName.SessionsList;
 	
 	String parameterValue = "parameter_value";
 
@@ -22,7 +22,9 @@ public class CommandTests
 	{
 		CommandCode code = CommandCode.Client_Disconnect;
 		
-		ICommand newCommand = new Command(code);
+		ICommand newCommand = new Command();
+		
+		newCommand.setCode(code);
 		
 		Assert.assertEquals(code, newCommand.getCode());
 	}
@@ -63,6 +65,24 @@ public class CommandTests
 		Command.parseXML(null);
 	}
 
+	@Test(expected = IllegalArgumentException.class)
+	public void setCode_CommandCodeIsNull_ThrowsIllegalArgumentException()
+	{
+		this.command.setCode(null);
+	}
+
+	@Test
+	public void setCode_SetsNewCommandCode()
+	{
+		CommandCode newCommandCode = CommandCode.Server_Bye;
+		
+		Assert.assertNotEquals(newCommandCode, this.command.getCode());
+		
+		this.command.setCode(newCommandCode);
+		
+		Assert.assertEquals(newCommandCode, this.command.getCode());
+	}
+
 	@Test
 	public void setParameter_NewParameter_CreatesNewParameter()
 			throws Exception
@@ -89,13 +109,13 @@ public class CommandTests
 		Assert.assertEquals(value,
 			this.command.getParameterValue(this.parameterName));
 	}
-
+	
 	@Test(expected = IllegalArgumentException.class)
 	public void setParameter_ParameterNameIsNull_ThrowsIllegalArgumentException()
 	{
 		this.command.setParameter(null, "parameter_value");
 	}
-
+	
 	@Test(expected = IllegalArgumentException.class)
 	public void setParameter_ParameterValueIsNull_ThrowsIllegalArgumentException()
 	{
@@ -105,7 +125,9 @@ public class CommandTests
 	@Before
 	public void setUp() throws Exception
 	{
-		this.command = new Command(CommandCode.Unknown);
+		this.command = new Command();
+		
+		this.command.setCode(CommandCode.Server_Welcome);
 
 		this.command.setParameter(this.parameterName, this.parameterValue);
 	}

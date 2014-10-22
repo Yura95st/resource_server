@@ -38,7 +38,9 @@ public class Command implements ICommand
 
 			Node commandCodeNode = doc.getElementsByTagName("code").item(0);
 
-			ICommand command = new Command(CommandCode.valueOf(commandCodeNode
+			ICommand command = new Command();
+
+			command.setCode(CommandCode.valueOf(commandCodeNode
 				.getTextContent()));
 
 			NodeList parametersNodeList = doc.getElementsByTagName("parameter");
@@ -69,13 +71,13 @@ public class Command implements ICommand
 	
 	Map<CommandParameterName, String> parameters;
 	
-	public Command(CommandCode code)
+	public Command()
 	{
-		this.code = code;
+		this.code = CommandCode.Unknown;
 
 		this.parameters = new HashMap<CommandParameterName, String>();
 	}
-
+	
 	@Override
 	public boolean equals(Object obj)
 	{
@@ -115,7 +117,7 @@ public class Command implements ICommand
 	{
 		return this.code;
 	}
-	
+
 	@Override
 	public String getParameterValue(CommandParameterName name)
 			throws CommandParameterNameNotFoundException
@@ -141,6 +143,14 @@ public class Command implements ICommand
 		result = prime * result
 				+ ((this.parameters == null) ? 0 : this.parameters.hashCode());
 		return result;
+	}
+	
+	@Override
+	public void setCode(CommandCode code)
+	{
+		Guard.isNotNull(code, "code");
+		
+		this.code = code;
 	}
 	
 	@Override

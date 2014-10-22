@@ -8,92 +8,122 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.Socket;
 
+import resource_server.Enums.CommandCode;
+import resource_server.Enums.CommandParameterName;
+import resource_server.Helpers.ExceptionHelper;
+import resource_server.Helpers.Guard;
 import resource_server.SessionsManager.ISessionsManager;
 
 public class Session implements ISession
 {
-	private BufferedReader bufferedReader;
-
 	private int id;
-
-	private PrintWriter printWriter;
+	
+	private BufferedReader input;
+	
+	private boolean isActive;
+	
+	private PrintWriter output;
 
 	private ISessionsManager sessionsManager;
 	
 	private Socket socket;
-
+	
 	public Session(int id, Socket socket, ISessionsManager sessionsManager)
-		throws IOException
+			throws IOException
 	{
 		this.id = id;
 		this.socket = socket;
 		this.sessionsManager = sessionsManager;
-
-		this.bufferedReader = new BufferedReader(new InputStreamReader(
+		
+		this.input = new BufferedReader(new InputStreamReader(
 			this.socket.getInputStream()));
-
-		this.printWriter = new PrintWriter(new BufferedWriter(
+		
+		this.output = new PrintWriter(new BufferedWriter(
 			new OutputStreamWriter(this.socket.getOutputStream())), true);
+		
+		this.isActive = false;
 	}
-
+	
 	@Override
 	public void close() throws IOException
 	{
 		this.socket.close();
-
+		
 		System.out.println("Socket has been closed: " + this.socket);
 	}
-
+	
 	@Override
 	public int getId()
 	{
 		return this.id;
 	}
-
-	@Override
-	public void run()
+	
+	private void handleInputFromClient(String inputFromClient)
 	{
+		Guard.isNotNull(inputFromClient, "inputFromClient");
+		
+		System.out.println(String.format("Client #%1$d: %2$s", this.id,
+			inputFromClient));
+		
 		try
 		{
-			this.send("Hi, there!");
+			ICommand command = Command.parseXML(inputFromClient);
 			
-			while (true)
+			switch (command.getCode())
 			{
-				String str = this.bufferedReader.readLine();
-
-				if (str == null)
+				case Client_Disconnect:
 				{
+					this.sendBye();
+					this.isActive = false;
 					break;
 				}
-
-				System.out.println(String.format("Client #%1$d: %2$s", this.id,
-					str));
-
-				StringBuilder stringBuilder = new StringBuilder();
-
-				if (str.equalsIgnoreCase("get_all_sessions"))
-				{
-					for (ISession session : this.sessionsManager
-							.getOpenedSessions())
-					{
-						stringBuilder.append(String.format("Session #%1$d; ",
-							session.getId()));
-					}
-				}
-				else
-				{
-					stringBuilder.append(String.format(
-						"I got your message: \"%1$s\"", str));
-				}
-
-				String message = stringBuilder.toString();
 				
-				this.send(message);
+				case Client_GetSessionsList:
+				{
+					this.sendSessionsList();
+					break;
+				}
+				
+				default:
+				{
+					System.out.println(String.format(
+						"Unknown command from server: %1$s", inputFromClient));
+					break;
+				}
 			}
 		}
 		catch (Exception e)
 		{
-			e.printStackTrace();
+			System.out.println(String.format(
+				"Unknown format of the command from server: %1$s",
+				inputFromClient));
+		}
+	}
+
+	@Override
+	public void run()
+	{
+		this.isActive = true;
+		
+		this.sendWelcomeCommand();
+		
+		try
+		{
+			while (this.isActive)
+			{
+				String inputFromClient = this.input.readLine();
+
+				if (inputFromClient == null)
+				{
+					break;
+				}
+				
+				this.handleInputFromClient(inputFromClient);
+			}
+		}
+		catch (Exception e)
+		{
+			System.err.println(ExceptionHelper.getFullExceptionMessage(e));
 		}
 		finally
 		{
@@ -103,14 +133,53 @@ public class Session implements ISession
 			}
 			catch (Exception e)
 			{
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				System.err.println(ExceptionHelper.getFullExceptionMessage(e));
 			}
 		}
 	}
 
-	private void send(String message)
+	private void sendBye()
 	{
-		this.printWriter.println(message);
+		ICommand command = new Command();
+
+		command.setCode(CommandCode.Server_Bye);
+
+		this.sendCommand(command);
+	}
+	
+	private void sendCommand(ICommand command)
+	{
+		this.output.println(command.toXML());
+	}
+
+	private void sendSessionsList()
+	{
+		ICommand command = new Command();
+
+		command.setCode(CommandCode.Server_SessionsList);
+
+		StringBuilder stringBuilder = new StringBuilder();
+
+		for (ISession session : this.sessionsManager.getOpenedSessions())
+		{
+			stringBuilder.append(String.format("Session #%1$d; ",
+				session.getId()));
+			stringBuilder.append(System.getProperty("line.separator"));
+		}
+
+		String parameterValue = stringBuilder.toString().trim();
+
+		command.setParameter(CommandParameterName.SessionsList, parameterValue);
+
+		this.sendCommand(command);
+	}
+	
+	private void sendWelcomeCommand()
+	{
+		ICommand command = new Command();
+
+		command.setCode(CommandCode.Server_Welcome);
+
+		this.sendCommand(command);
 	}
 }

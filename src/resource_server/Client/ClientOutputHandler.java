@@ -1,4 +1,4 @@
-package resource_server.CommandHandlers;
+package resource_server.Client;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -37,26 +37,52 @@ public class ClientOutputHandler implements Runnable
 	private void handleInput(String input)
 	{
 		Guard.isNotNull(input, "input");
+
+		ICommand command = new Command();
 		
 		if (this.socket.isClosed() || input.equalsIgnoreCase("quit")
 			|| input.equalsIgnoreCase("q"))
 		{
 			this.active = false;
+			return;
+		}
+		else if (input.equalsIgnoreCase("help") || input.equalsIgnoreCase("h"))
+		{
+			this.printHelp();
+			return;
 		}
 		else if (input.equalsIgnoreCase("disconnect"))
 		{
-			ICommand command = new Command(CommandCode.Client_Disconnect);
-			
-			this.output.println(command.toXML());
+			command.setCode(CommandCode.Client_Disconnect);
 		}
-		else if (input.equalsIgnoreCase("get_all_sessions"))
+		else if (input.equalsIgnoreCase("get_sessions_list"))
 		{
-			this.output.println(input);
+			command.setCode(CommandCode.Client_GetSessionsList);
 		}
 		else
 		{
 			System.out.println(String.format("Unknown command: %1$s", input));
+			return;
 		}
+
+		this.output.println(command.toXML());
+	}
+	
+	private void printHelp()
+	{
+		StringBuilder stringBuilder = new StringBuilder();
+		
+		stringBuilder.append("Here are the list of available commands:");
+		stringBuilder.append(System.getProperty("line.separator"));
+		stringBuilder
+				.append("disconnect              To disconnect from server.");
+		stringBuilder.append(System.getProperty("line.separator"));
+		stringBuilder
+				.append("get_sessions_list       To get the list of all opened sessions.");
+		stringBuilder.append(System.getProperty("line.separator"));
+		stringBuilder.append("quit                    To exit");
+
+		System.out.println(stringBuilder.toString());
 	}
 	
 	@Override
@@ -85,8 +111,11 @@ public class ClientOutputHandler implements Runnable
 			try
 			{
 				this.output.close();
-
-				this.socket.close();
+				
+				if (!this.socket.isClosed())
+				{
+					this.socket.close();
+				}
 			}
 			catch (IOException e)
 			{
