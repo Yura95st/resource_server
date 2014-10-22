@@ -6,13 +6,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import resource_server.ISession;
-import resource_server.Session;
 import resource_server.Exceptions.FailedToCloseSessionException;
 import resource_server.Exceptions.FailedToOpenSessionFromSocketException;
 import resource_server.Exceptions.SessionAlreadyExistsException;
 import resource_server.Exceptions.SessionDoesNotExistException;
 import resource_server.Helpers.Guard;
+import resource_server.Models.ISession;
+import resource_server.Models.Session;
 
 public class SessionsManager implements IServerSessionsManager
 {

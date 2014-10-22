@@ -1,4 +1,4 @@
-package resource_server;
+package resource_server.Models;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;

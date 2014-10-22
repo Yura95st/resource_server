@@ -6,8 +6,8 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.List;
 
-import resource_server.ISession;
 import resource_server.Helpers.ExceptionHelper;
+import resource_server.Models.ISession;
 import resource_server.SessionsManager.IServerSessionsManager;
 import resource_server.SessionsManager.SessionsManager;
 
