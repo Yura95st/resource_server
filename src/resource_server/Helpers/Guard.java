@@ -10,7 +10,7 @@ public class Guard
 				"Argument can't be less, than 0: %1$s", objectName));
 		}
 	}
-	
+
 	public static void isNotNull(Object object, String objectName)
 	{
 		if (object == null)
