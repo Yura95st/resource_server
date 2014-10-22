@@ -24,6 +24,8 @@ public class Command implements ICommand
 	public static ICommand parseXML(String xmlString)
 		throws FailedToParseCommandFromXMLException
 	{
+		Guard.isNotNull(xmlString, "xmlString");
+		
 		try
 		{
 			DocumentBuilder db = DocumentBuilderFactory.newInstance()
