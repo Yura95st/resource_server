@@ -2,5 +2,8 @@ package resource_server.Enums;
 
 public enum CommandParameterName
 {
-	ResourcesList, SessionsList
+	CommandName,
+	ResourceName,
+	ResourcesList,
+	SessionsList
 }

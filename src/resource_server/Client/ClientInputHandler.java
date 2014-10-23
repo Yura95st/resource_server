@@ -14,19 +14,19 @@ import resource_server.Models.ICommand;
 public class ClientInputHandler implements Runnable
 {
 	private BufferedReader input;
-
+	
 	private Socket socket;
-
+	
 	public ClientInputHandler(Socket socket) throws IOException
 	{
 		Guard.isNotNull(socket, "socket");
-		
-		this.socket = socket;
 
+		this.socket = socket;
+		
 		this.input = new BufferedReader(new InputStreamReader(
 			this.socket.getInputStream()));
 	}
-
+	
 	@Override
 	public void run()
 	{
@@ -35,12 +35,12 @@ public class ClientInputHandler implements Runnable
 			while (!this.socket.isClosed())
 			{
 				String inputFromServer = this.input.readLine();
-				
+
 				if (inputFromServer == null)
 				{
 					break;
 				}
-
+				
 				this.handleInputFromServer(inputFromServer);
 			}
 		}
@@ -53,7 +53,7 @@ public class ClientInputHandler implements Runnable
 			try
 			{
 				this.input.close();
-				
+
 				if (!this.socket.isClosed())
 				{
 					this.socket.close();
@@ -63,19 +63,19 @@ public class ClientInputHandler implements Runnable
 			{
 				System.err.println(ExceptionHelper.getFullExceptionMessage(e));
 			}
-
+			
 			System.out.println("Connection lost. Press 'Enter' to exit...");
 		}
 	}
-
+	
 	private void handleInputFromServer(String inputFromServer)
 	{
 		Guard.isNotNull(inputFromServer, "inputFromServer");
-
+		
 		try
 		{
 			ICommand command = Command.parseXML(inputFromServer);
-
+			
 			switch (command.getCode())
 			{
 				case Server_Welcome:
@@ -83,27 +83,79 @@ public class ClientInputHandler implements Runnable
 					System.out.println("Server: Welcome!");
 					break;
 				}
-				
+
 				case Server_Bye:
 				{
 					System.out.println("Server: Bye! I hope to see You later.");
 					break;
 				}
-				
+
 				case Server_SessionsList:
 				{
 					this.printSessionsList(command
-							.getParameterValue(CommandParameterName.SessionsList));
-					break;
-				}
-				
-				case Server_ResourcesList:
-				{
-					this.printResourcesList(command
-							.getParameterValue(CommandParameterName.ResourcesList));
+						.getParameterValue(CommandParameterName.SessionsList));
 					break;
 				}
 
+				case Server_ResourcesList:
+				{
+					this.printResourcesList(command
+						.getParameterValue(CommandParameterName.ResourcesList));
+					break;
+				}
+
+				case Server_ResourceIsAlreadyHeld:
+				{
+					System.out
+							.println(String
+									.format(
+										"Server: Resource '%1$s' is already held.",
+										command.getParameterValue(CommandParameterName.ResourceName)));
+					break;
+				}
+
+				case Server_ResourceIsReleased:
+				{
+					System.out
+							.println(String
+									.format(
+										"Server: Resource '%1$s' successfully released.",
+										command.getParameterValue(CommandParameterName.ResourceName)));
+					break;
+				}
+
+				case Server_ResourceIsHeld:
+				{
+					System.out
+							.println(String
+									.format(
+										"Server: Resource '%1$s' successfully held.",
+										command.getParameterValue(CommandParameterName.ResourceName)));
+					break;
+				}
+
+				case Server_ResourcesAreReleased:
+				{
+					System.out
+							.println("Server: All resources successfully released.");
+					break;
+				}
+
+				case Server_ResourceNotFound:
+				{
+					System.out
+							.println(String.format(
+								"Server: Resource '%1$s' not found.",
+								command.getParameterValue(CommandParameterName.ResourceName)));
+					break;
+				}
+
+				case Server_UnknownCommand:
+				{
+					System.out.println("Server: Unknown command.");
+					break;
+				}
+				
 				default:
 				{
 					System.out.println(String.format(
@@ -119,25 +171,26 @@ public class ClientInputHandler implements Runnable
 				inputFromServer));
 		}
 	}
-	
+
 	private void printResourcesList(String resourcesString)
 	{
 		System.out.println("Server: Here are the list of resources:");
-		
-		int i=1;
-		
+
+		int i = 1;
+
 		for (String resourceName : resourcesString.split("\t"))
 		{
-			System.out.println(String.format("\t%1$d. %2$s", i++, resourceName));
+			System.out
+					.println(String.format("\t%1$d. %2$s", i++, resourceName));
 		}
 	}
-
+	
 	private void printSessionsList(String sessionsString)
 	{
 		System.out.println("Server: Here are the list of opened sessions:");
-
-		int i=1;
 		
+		int i = 1;
+
 		for (String sessionName : sessionsString.split("\t"))
 		{
 			System.out.println(String.format("\t%1$d. %2$s", i++, sessionName));

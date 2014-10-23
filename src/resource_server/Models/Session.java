@@ -10,6 +10,8 @@ import java.net.Socket;
 
 import resource_server.Enums.CommandCode;
 import resource_server.Enums.CommandParameterName;
+import resource_server.Exceptions.ResourceIsAlreadyHeldException;
+import resource_server.Exceptions.ResourceNotFoundException;
 import resource_server.Helpers.ExceptionHelper;
 import resource_server.Helpers.Guard;
 import resource_server.ResourcesManager.IResourcesManager;
@@ -27,11 +29,11 @@ public class Session implements ISession
 	
 	private PrintWriter output;
 
-	private ISessionsManager sessionsManager;
-	
-	private Socket socket;
-
 	private IResourcesManager resourcesManager;
+	
+	private ISessionsManager sessionsManager;
+
+	private Socket socket;
 	
 	public Session(int id, Socket socket) throws IOException
 	{
@@ -109,9 +111,9 @@ public class Session implements ISession
 	private void handleInputFromClient(String inputFromClient)
 	{
 		Guard.isNotNull(inputFromClient, "inputFromClient");
-		
-		System.out.println(String.format("Client #%1$d: %2$s", this.id,
-			inputFromClient));
+
+		//		System.out.println(String.format("Client #%1$d: %2$s", this.id,
+		//			inputFromClient));
 		
 		try
 		{
@@ -138,20 +140,89 @@ public class Session implements ISession
 					break;
 				}
 				
+				case Client_GetResource:
+				{
+					this.tryToHoldResource(command
+						.getParameterValue(CommandParameterName.ResourceName));
+					break;
+				}
+				
+				case Client_ReleaseResource:
+				{
+					this.releaseResource(command
+						.getParameterValue(CommandParameterName.ResourceName));
+					break;
+				}
+				
+				case Client_ReleaseAllResources:
+				{
+					this.releaseAllResources();
+					break;
+				}
+				
 				default:
 				{
-					System.out.println(String.format(
-						"Unknown command from server: %1$s", inputFromClient));
+					this.sendUnknownCommand();
 					break;
 				}
 			}
 		}
 		catch (Exception e)
 		{
-			System.out.println(String.format(
-				"Unknown format of the command from server: %1$s",
-				inputFromClient));
+			this.sendUnknownCommand();
 		}
+	}
+
+	private void releaseAllResources()
+	{
+		ICommand command = new Command();
+		
+		CommandCode code = CommandCode.Server_ResourcesAreReleased;
+		
+		this.resourcesManager.releaseSessionResources(this.id);
+		
+		command.setCode(code);
+		
+		this.sendCommand(command);
+	}
+
+	private void releaseResource(String resourceName)
+	{
+		ICommand command = new Command();
+		
+		command.setParameter(CommandParameterName.ResourceName, resourceName);
+		
+		CommandCode code = CommandCode.Server_ResourceIsReleased;
+		
+		try
+		{
+			IResource resource = this.resourcesManager
+					.getResource(resourceName);
+			
+			this.resourcesManager.releaseResource(resource);
+		}
+		catch (ResourceNotFoundException e)
+		{
+			code = CommandCode.Server_ResourceNotFound;
+		}
+		
+		command.setCode(code);
+		
+		this.sendCommand(command);
+	}
+
+	private void sendBye()
+	{
+		ICommand command = new Command();
+
+		command.setCode(CommandCode.Server_Bye);
+
+		this.sendCommand(command);
+	}
+
+	private void sendCommand(ICommand command)
+	{
+		this.output.println(command.toXML());
 	}
 
 	private void sendResourcesList()
@@ -176,21 +247,7 @@ public class Session implements ISession
 
 		this.sendCommand(command);
 	}
-
-	private void sendBye()
-	{
-		ICommand command = new Command();
-
-		command.setCode(CommandCode.Server_Bye);
-
-		this.sendCommand(command);
-	}
 	
-	private void sendCommand(ICommand command)
-	{
-		this.output.println(command.toXML());
-	}
-
 	private void sendSessionsList()
 	{
 		ICommand command = new Command();
@@ -214,6 +271,15 @@ public class Session implements ISession
 
 		this.sendCommand(command);
 	}
+
+	private void sendUnknownCommand()
+	{
+		ICommand command = new Command();
+
+		command.setCode(CommandCode.Server_UnknownCommand);
+
+		this.sendCommand(command);
+	}
 	
 	private void sendWelcomeCommand()
 	{
@@ -221,6 +287,35 @@ public class Session implements ISession
 
 		command.setCode(CommandCode.Server_Welcome);
 
+		this.sendCommand(command);
+	}
+	
+	private void tryToHoldResource(String resourceName)
+	{
+		ICommand command = new Command();
+		
+		command.setParameter(CommandParameterName.ResourceName, resourceName);
+		
+		CommandCode code = CommandCode.Server_ResourceIsHeld;
+		
+		try
+		{
+			IResource resource = this.resourcesManager
+					.getResource(resourceName);
+			
+			this.resourcesManager.holdResource(resource, this.id);
+		}
+		catch (ResourceNotFoundException e)
+		{
+			code = CommandCode.Server_ResourceNotFound;
+		}
+		catch (ResourceIsAlreadyHeldException e)
+		{
+			code = CommandCode.Server_ResourceIsAlreadyHeld;
+		}
+		
+		command.setCode(code);
+		
 		this.sendCommand(command);
 	}
 }
