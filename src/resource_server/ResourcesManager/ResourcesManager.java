@@ -14,11 +14,23 @@ import resource_server.Models.Resource;
 
 public class ResourcesManager implements IResourcesManager
 {
+	private static ResourcesManager instance = null;
+	
+	public static ResourcesManager getInstance()
+	{
+		if (ResourcesManager.instance == null)
+		{
+			ResourcesManager.instance = new ResourcesManager();
+		}
+
+		return ResourcesManager.instance;
+	}
+	
 	Map<String, Integer> heldResources;
 	
 	Map<String, IResource> resorces;
 	
-	public ResourcesManager()
+	protected ResourcesManager()
 	{
 		this.resorces = new HashMap<String, IResource>();
 		

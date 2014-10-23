@@ -29,9 +29,9 @@ public class Server implements Closeable
 	private String host;
 
 	private int port;
-
-	private ServerSocket serverSocket;
 	
+	private ServerSocket serverSocket;
+
 	private IServerSessionsManager sessionsManager;
 
 	public Server(String host, int port)
@@ -40,7 +40,7 @@ public class Server implements Closeable
 
 		this.port = port;
 
-		this.sessionsManager = new SessionsManager();
+		this.sessionsManager = SessionsManager.getInstance();
 	}
 
 	@Override

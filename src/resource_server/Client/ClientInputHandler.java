@@ -52,9 +52,13 @@ public class ClientInputHandler implements Runnable
 				case Server_SessionsList:
 				{
 					System.out.println("Server: Here are the list of opened sessions:");
-					System.out
-							.println(command
-									.getParameterValue(CommandParameterName.SessionsList));
+					
+					String sessionsString = command.getParameterValue(CommandParameterName.SessionsList);
+					
+					for(String sessionName : sessionsString.split("\t"))
+					{
+						System.out.println("\t" + sessionName);
+					}
 					break;
 				}
 				

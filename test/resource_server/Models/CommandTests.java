@@ -34,7 +34,7 @@ public class CommandTests
 			throws Exception
 	
 	{
-		this.command.getParameterValue(CommandParameterName.Bar);
+		this.command.getParameterValue(CommandParameterName.ResourcesList);
 	}
 
 	@Test(expected = IllegalArgumentException.class)
@@ -87,7 +87,7 @@ public class CommandTests
 	public void setParameter_NewParameter_CreatesNewParameter()
 			throws Exception
 	{
-		CommandParameterName name = CommandParameterName.Bar;
+		CommandParameterName name = CommandParameterName.ResourcesList;
 		String value = "new_parameter_value";
 
 		this.command.setParameter(name, value);
