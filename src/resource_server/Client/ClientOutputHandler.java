@@ -98,6 +98,10 @@ public class ClientOutputHandler implements Runnable
 		{
 			command.setCode(CommandCode.Client_GetSessionsList);
 		}
+		else if (input.equalsIgnoreCase("get_resources_list"))
+		{
+			command.setCode(CommandCode.Client_GetResourcesList);
+		}
 		else
 		{
 			System.out.println(String.format("Unknown command: %1$s", input));
@@ -117,7 +121,10 @@ public class ClientOutputHandler implements Runnable
 		.append("disconnect              To disconnect from server.");
 		stringBuilder.append(System.getProperty("line.separator"));
 		stringBuilder
-		.append("get_sessions_list       To get the list of all opened sessions.");
+		.append("get_resources_list      To get the list of server resources.");
+		stringBuilder.append(System.getProperty("line.separator"));
+		stringBuilder
+		.append("get_sessions_list       To get the list of all opened sessions on the server.");
 		stringBuilder.append(System.getProperty("line.separator"));
 		stringBuilder.append("quit                    To exit");
 		

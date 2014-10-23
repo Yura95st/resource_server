@@ -12,6 +12,8 @@ import resource_server.Enums.CommandCode;
 import resource_server.Enums.CommandParameterName;
 import resource_server.Helpers.ExceptionHelper;
 import resource_server.Helpers.Guard;
+import resource_server.ResourcesManager.IResourcesManager;
+import resource_server.ResourcesManager.ResourcesManager;
 import resource_server.SessionsManager.ISessionsManager;
 import resource_server.SessionsManager.SessionsManager;
 
@@ -28,6 +30,8 @@ public class Session implements ISession
 	private ISessionsManager sessionsManager;
 	
 	private Socket socket;
+
+	private IResourcesManager resourcesManager;
 	
 	public Session(int id, Socket socket) throws IOException
 	{
@@ -36,13 +40,16 @@ public class Session implements ISession
 		
 		this.id = id;
 		this.socket = socket;
-		this.sessionsManager = SessionsManager.getInstance();
 		
 		this.input = new BufferedReader(new InputStreamReader(
 			this.socket.getInputStream()));
 		
 		this.output = new PrintWriter(new BufferedWriter(
 			new OutputStreamWriter(this.socket.getOutputStream())), true);
+		
+		this.sessionsManager = SessionsManager.getInstance();
+		
+		this.resourcesManager = ResourcesManager.getInstance();
 		
 		this.isActive = false;
 	}
@@ -125,6 +132,12 @@ public class Session implements ISession
 					break;
 				}
 				
+				case Client_GetResourcesList:
+				{
+					this.sendResourcesList();
+					break;
+				}
+				
 				default:
 				{
 					System.out.println(String.format(
@@ -139,6 +152,29 @@ public class Session implements ISession
 				"Unknown format of the command from server: %1$s",
 				inputFromClient));
 		}
+	}
+
+	private void sendResourcesList()
+	{
+		ICommand command = new Command();
+
+		command.setCode(CommandCode.Server_ResourcesList);
+
+		StringBuilder stringBuilder = new StringBuilder();
+
+		for (IResource resource : this.resourcesManager.getResources())
+		{
+			stringBuilder.append(resource.getName());
+			
+			// Divide names with \t character to be able to split them later
+			stringBuilder.append('\t');
+		}
+
+		String parameterValue = stringBuilder.toString().trim();
+
+		command.setParameter(CommandParameterName.ResourcesList, parameterValue);
+
+		this.sendCommand(command);
 	}
 
 	private void sendBye()

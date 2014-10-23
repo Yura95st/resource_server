@@ -92,16 +92,15 @@ public class ClientInputHandler implements Runnable
 				
 				case Server_SessionsList:
 				{
-					System.out
-							.println("Server: Here are the list of opened sessions:");
-
-					String sessionsString = command
-							.getParameterValue(CommandParameterName.SessionsList);
-
-					for (String sessionName : sessionsString.split("\t"))
-					{
-						System.out.println("\t" + sessionName);
-					}
+					this.printSessionsList(command
+							.getParameterValue(CommandParameterName.SessionsList));
+					break;
+				}
+				
+				case Server_ResourcesList:
+				{
+					this.printResourcesList(command
+							.getParameterValue(CommandParameterName.ResourcesList));
 					break;
 				}
 
@@ -118,6 +117,30 @@ public class ClientInputHandler implements Runnable
 			System.out.println(String.format(
 				"Unknown format of the command from server: %1$s",
 				inputFromServer));
+		}
+	}
+	
+	private void printResourcesList(String resourcesString)
+	{
+		System.out.println("Server: Here are the list of resources:");
+		
+		int i=1;
+		
+		for (String resourceName : resourcesString.split("\t"))
+		{
+			System.out.println(String.format("\t%1$d. %2$s", i++, resourceName));
+		}
+	}
+
+	private void printSessionsList(String sessionsString)
+	{
+		System.out.println("Server: Here are the list of opened sessions:");
+
+		int i=1;
+		
+		for (String sessionName : sessionsString.split("\t"))
+		{
+			System.out.println(String.format("\t%1$d. %2$s", i++, sessionName));
 		}
 	}
 }
