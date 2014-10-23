@@ -7,6 +7,9 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import resource_server.Enums.ClientUserCommand;
 import resource_server.Enums.CommandCode;
@@ -20,8 +23,10 @@ public class ClientOutputHandler implements Runnable
 {
 	private boolean active;
 	
-	private PrintWriter output;
+	private Map<ClientUserCommand, String> helpMap;
 	
+	private PrintWriter output;
+
 	private Socket socket;
 	
 	public ClientOutputHandler(Socket socket) throws IOException
@@ -34,6 +39,24 @@ public class ClientOutputHandler implements Runnable
 			new OutputStreamWriter(this.socket.getOutputStream())), true);
 		
 		this.active = false;
+		
+		this.helpMap = new HashMap<ClientUserCommand, String>() {
+			{
+				this.put(ClientUserCommand.Disconnect,
+						"To disconnect from server.");
+				this.put(ClientUserCommand.GetResource,
+						"To get the resource from server.");
+				this.put(ClientUserCommand.GetResourcesList,
+						"To get the list of server resources.");
+				this.put(ClientUserCommand.GetSessionsList,
+						"To get the list of all opened sessions on the server.");
+				this.put(ClientUserCommand.ReleaseAllResources,
+						"To release all resources, that are held.");
+				this.put(ClientUserCommand.ReleaseResource,
+						"To release resource.");
+				this.put(ClientUserCommand.Quit, "To exit.");
+			}
+		};
 	}
 	
 	@Override
@@ -75,7 +98,7 @@ public class ClientOutputHandler implements Runnable
 		}
 	}
 	
-	private void handleInput(String input)
+	private void handleInput(String input) throws IOException
 	{
 		Guard.isNotNull(input, "input");
 
@@ -163,39 +186,63 @@ public class ClientOutputHandler implements Runnable
 		this.output.println(command.toXML());
 	}
 	
+	public void clearConsole() throws IOException
+	{
+		String os = System.getProperty("os.name");
+
+        if (os.contains("Windows"))
+        {
+            Runtime.getRuntime().exec("cls");
+        }
+        else
+        {
+            Runtime.getRuntime().exec("clear");
+        }
+	}
+	
 	private void printHelp()
 	{
 		StringBuilder stringBuilder = new StringBuilder();
-		
-		stringBuilder.append("Here are the list of available commands:");
-		stringBuilder.append(System.getProperty("line.separator"));
-		
-		stringBuilder.append(ClientUserCommand.Disconnect.toString()
-			+ " To disconnect from server.");
-		stringBuilder.append(System.getProperty("line.separator"));
-		
-		stringBuilder.append(ClientUserCommand.GetResource.toString()
-			+ " <resource_name> To get the resource from server.");
-		stringBuilder.append(System.getProperty("line.separator"));
-		
-		stringBuilder.append(ClientUserCommand.GetResourcesList.toString()
-			+ " To get the list of server resources.");
-		stringBuilder.append(System.getProperty("line.separator"));
-		
-		stringBuilder.append(ClientUserCommand.GetSessionsList.toString()
-			+ " To get the list of all opened sessions on the server.");
-		stringBuilder.append(System.getProperty("line.separator"));
-		
-		stringBuilder.append(ClientUserCommand.ReleaseAllResources.toString()
-			+ " To release all resources, that are held.");
-		stringBuilder.append(System.getProperty("line.separator"));
-		
-		stringBuilder.append(ClientUserCommand.ReleaseResource.toString()
-			+ " <resource_name> To release resource.");
-		stringBuilder.append(System.getProperty("line.separator"));
-		
-		stringBuilder.append(ClientUserCommand.Quit.toString() + " To exit");
 
-		System.out.println(stringBuilder.toString());
+		int maxLength = 0;
+
+		for (ClientUserCommand key : this.helpMap.keySet())
+		{
+			int length = key.toString().length();
+
+			maxLength = maxLength < length ? length : maxLength;
+		}
+
+		String separator = "";
+
+		for (int i = 0; i < maxLength + 20; i++)
+		{
+			separator += " ";
+		}
+
+		stringBuilder.append("Here are the list of available commands:");
+
+		for (Entry<ClientUserCommand, String> entry : this.helpMap.entrySet())
+		{
+			ClientUserCommand key = entry.getKey();
+			
+			int length = key.toString().length();
+			
+			stringBuilder.append(System.getProperty("line.separator"));
+			stringBuilder.append(key.toString());
+			
+			if (key == ClientUserCommand.GetResource || key == ClientUserCommand.ReleaseResource)
+			{
+				String parameter = " <resource_name>";
+				stringBuilder.append(parameter);
+				
+				length += parameter.length();
+			}
+			
+			stringBuilder.append(separator.substring(length));
+			stringBuilder.append(entry.getValue());
+		}
+
+		System.out.println(stringBuilder.toString().trim());
 	}
 }
