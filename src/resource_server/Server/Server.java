@@ -7,6 +7,7 @@ import java.net.Socket;
 import java.util.List;
 
 import resource_server.Helpers.ExceptionHelper;
+import resource_server.Helpers.Guard;
 import resource_server.Models.ISession;
 import resource_server.SessionsManager.IServerSessionsManager;
 import resource_server.SessionsManager.SessionsManager;
@@ -36,6 +37,9 @@ public class Server implements Closeable
 	
 	public Server(String host, int port)
 	{
+		Guard.isNotNull(host, "host");
+		Guard.isMoreOrEqualToZero(port, "port");
+		
 		this.host = host;
 		
 		this.port = port;

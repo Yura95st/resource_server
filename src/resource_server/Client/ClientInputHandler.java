@@ -64,7 +64,7 @@ public class ClientInputHandler implements Runnable
 				System.err.println(ExceptionHelper.getFullExceptionMessage(e));
 			}
 
-			System.out.println("Connection lost. Press any key to exit...");
+			System.out.println("Connection lost. Press 'Enter' to exit...");
 		}
 	}
 

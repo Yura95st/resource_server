@@ -5,6 +5,7 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 
 import resource_server.Helpers.ExceptionHelper;
+import resource_server.Helpers.Guard;
 
 public class Client
 {
@@ -28,6 +29,9 @@ public class Client
 
 	public Client(String host, int port)
 	{
+		Guard.isNotNull(host, "host");
+		Guard.isMoreOrEqualToZero(port, "port");
+		
 		this.host = host;
 		this.port = port;
 	}

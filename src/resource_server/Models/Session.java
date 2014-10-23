@@ -31,6 +31,9 @@ public class Session implements ISession
 	
 	public Session(int id, Socket socket) throws IOException
 	{
+		Guard.isMoreOrEqualToZero(id, "id");
+		Guard.isNotNull(socket, "socket");
+		
 		this.id = id;
 		this.socket = socket;
 		this.sessionsManager = SessionsManager.getInstance();
