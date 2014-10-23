@@ -18,64 +18,64 @@ import resource_server.SessionsManager.SessionsManager;
 public class Session implements ISession
 {
 	private int id;
-
-	private BufferedReader input;
-
-	private boolean isActive;
-
-	private PrintWriter output;
 	
+	private BufferedReader input;
+	
+	private boolean isActive;
+	
+	private PrintWriter output;
+
 	private ISessionsManager sessionsManager;
-
+	
 	private Socket socket;
-
+	
 	public Session(int id, Socket socket) throws IOException
 	{
 		this.id = id;
 		this.socket = socket;
 		this.sessionsManager = SessionsManager.getInstance();
-
+		
 		this.input = new BufferedReader(new InputStreamReader(
 			this.socket.getInputStream()));
-
+		
 		this.output = new PrintWriter(new BufferedWriter(
 			new OutputStreamWriter(this.socket.getOutputStream())), true);
-
+		
 		this.isActive = false;
 	}
-
+	
 	@Override
 	public void close() throws IOException
 	{
 		this.socket.close();
-
+		
 		System.out.println("Socket has been closed: " + this.socket);
 	}
-
+	
 	@Override
 	public int getId()
 	{
 		return this.id;
 	}
-
+	
 	@Override
 	public void run()
 	{
 		this.isActive = true;
-
+		
 		this.sendWelcomeCommand();
-
+		
 		try
 		{
 			while (this.isActive)
 			{
 				String inputFromClient = this.input.readLine();
-				
+
 				if (inputFromClient == null)
 				{
 					break;
 				}
-
+				
 				this.handleInputFromClient(inputFromClient);
 			}
 		}
@@ -95,18 +95,18 @@ public class Session implements ISession
 			}
 		}
 	}
-	
+
 	private void handleInputFromClient(String inputFromClient)
 	{
 		Guard.isNotNull(inputFromClient, "inputFromClient");
-
+		
 		System.out.println(String.format("Client #%1$d: %2$s", this.id,
 			inputFromClient));
-
+		
 		try
 		{
 			ICommand command = Command.parseXML(inputFromClient);
-
+			
 			switch (command.getCode())
 			{
 				case Client_Disconnect:
@@ -115,13 +115,13 @@ public class Session implements ISession
 					this.isActive = false;
 					break;
 				}
-
+				
 				case Client_GetSessionsList:
 				{
 					this.sendSessionsList();
 					break;
 				}
-
+				
 				default:
 				{
 					System.out.println(String.format(
@@ -137,51 +137,51 @@ public class Session implements ISession
 				inputFromClient));
 		}
 	}
-	
+
 	private void sendBye()
 	{
 		ICommand command = new Command();
-		
+
 		command.setCode(CommandCode.Server_Bye);
-		
+
 		this.sendCommand(command);
 	}
-
+	
 	private void sendCommand(ICommand command)
 	{
 		this.output.println(command.toXML());
 	}
-	
+
 	private void sendSessionsList()
 	{
 		ICommand command = new Command();
-		
+
 		command.setCode(CommandCode.Server_SessionsList);
-		
+
 		StringBuilder stringBuilder = new StringBuilder();
-		
+
 		for (ISession session : this.sessionsManager.getOpenedSessions())
 		{
 			stringBuilder
-					.append(String.format("Session #%1$d", session.getId()));
-
+			.append(String.format("Session #%1$d", session.getId()));
+			
 			// Divide session names with \t character to be able to split them later
 			stringBuilder.append('\t');
 		}
-		
+
 		String parameterValue = stringBuilder.toString().trim();
-		
+
 		command.setParameter(CommandParameterName.SessionsList, parameterValue);
-		
+
 		this.sendCommand(command);
 	}
-
+	
 	private void sendWelcomeCommand()
 	{
 		ICommand command = new Command();
-		
+
 		command.setCode(CommandCode.Server_Welcome);
-		
+
 		this.sendCommand(command);
 	}
 }

@@ -22,42 +22,42 @@ import resource_server.Helpers.Guard;
 public class Command implements ICommand
 {
 	public static ICommand parseXML(String xmlString)
-		throws FailedToParseCommandFromXMLException
+			throws FailedToParseCommandFromXMLException
 	{
 		Guard.isNotNull(xmlString, "xmlString");
-		
+
 		try
 		{
 			DocumentBuilder db = DocumentBuilderFactory.newInstance()
 					.newDocumentBuilder();
-			
+
 			InputSource is = new InputSource();
 			is.setCharacterStream(new StringReader(xmlString));
-
+			
 			Document doc = db.parse(is);
-
+			
 			Node commandCodeNode = doc.getElementsByTagName("code").item(0);
-
+			
 			ICommand command = new Command();
-
+			
 			command.setCode(CommandCode.valueOf(commandCodeNode
-				.getTextContent()));
-
+					.getTextContent()));
+			
 			NodeList parametersNodeList = doc.getElementsByTagName("parameter");
-
+			
 			for (int i = 0, count = parametersNodeList.getLength(); i < count; i++)
 			{
 				Node parameterNode = parametersNodeList.item(0);
-
+				
 				NodeList childNodes = parameterNode.getChildNodes();
-
+				
 				CommandParameterName parameterName = CommandParameterName
 						.valueOf(childNodes.item(0).getTextContent());
 				String parameterValue = childNodes.item(1).getTextContent();
-
+				
 				command.setParameter(parameterName, parameterValue);
 			}
-
+			
 			return command;
 		}
 		catch (Exception e)
@@ -66,18 +66,18 @@ public class Command implements ICommand
 				"Failed to parse Command from XML: %1$s", xmlString), e);
 		}
 	}
-	
+
 	CommandCode code;
-	
+
 	Map<CommandParameterName, String> parameters;
-	
+
 	public Command()
 	{
 		this.code = CommandCode.Unknown;
-
+		
 		this.parameters = new HashMap<CommandParameterName, String>();
 	}
-	
+
 	@Override
 	public boolean equals(Object obj)
 	{
@@ -111,68 +111,68 @@ public class Command implements ICommand
 		}
 		return true;
 	}
-
+	
 	@Override
 	public CommandCode getCode()
 	{
 		return this.code;
 	}
-
+	
 	@Override
 	public String getParameterValue(CommandParameterName name)
-			throws CommandParameterNameNotFoundException
+		throws CommandParameterNameNotFoundException
 	{
 		Guard.isNotNull(name, "name");
-
+		
 		if (!this.parameters.containsKey(name))
 		{
 			throw new CommandParameterNameNotFoundException(String.format(
 				"Command parameter with name: %1$s was not found.", name));
 		}
-
+		
 		return this.parameters.get(name);
 	}
-	
+
 	@Override
 	public int hashCode()
 	{
 		final int prime = 31;
 		int result = 1;
 		result = prime * result
-			+ ((this.code == null) ? 0 : this.code.hashCode());
+				+ ((this.code == null) ? 0 : this.code.hashCode());
 		result = prime * result
-				+ ((this.parameters == null) ? 0 : this.parameters.hashCode());
+			+ ((this.parameters == null) ? 0 : this.parameters.hashCode());
 		return result;
 	}
-	
+
 	@Override
 	public void setCode(CommandCode code)
 	{
 		Guard.isNotNull(code, "code");
-		
+
 		this.code = code;
 	}
-	
+
 	@Override
 	public void setParameter(CommandParameterName name, String value)
 	{
 		Guard.isNotNull(name, "name");
 		Guard.isNotNull(value, "value");
-
+		
 		this.parameters.put(name, value);
 	}
-	
+
 	@Override
 	public String toXML()
 	{
 		StringBuilder stringBuilder = new StringBuilder();
-		
+
 		stringBuilder.append("<command>");
-		
+
 		stringBuilder.append(String.format("<code>%1$s</code>", this.code));
-		
+
 		stringBuilder.append("<parameters>");
-		
+
 		for (Entry<CommandParameterName, String> entry : this.parameters
 				.entrySet())
 		{
@@ -183,12 +183,12 @@ public class Command implements ICommand
 				entry.getValue()));
 			stringBuilder.append("</parameter>");
 		}
-		
+
 		stringBuilder.append("</parameters>");
 		stringBuilder.append("</command>");
-		
+
 		String xmlString = stringBuilder.toString().trim();
-		
+
 		return xmlString;
 	}
 }

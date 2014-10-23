@@ -9,8 +9,8 @@ import resource_server.Models.ISession;
 public interface IServerSessionsManager extends ISessionsManager
 {
 	void openSession(ISession session) throws SessionAlreadyExistsException;
-
+	
 	void openSessionFromSocket(Socket socket)
-			throws SessionAlreadyExistsException,
-			FailedToOpenSessionFromSocketException;
+		throws SessionAlreadyExistsException,
+		FailedToOpenSessionFromSocketException;
 }
