@@ -47,7 +47,7 @@ public class Command implements ICommand
 			
 			for (int i = 0, count = parametersNodeList.getLength(); i < count; i++)
 			{
-				Node parameterNode = parametersNodeList.item(0);
+				Node parameterNode = parametersNodeList.item(i);
 				
 				NodeList childNodes = parameterNode.getChildNodes();
 				

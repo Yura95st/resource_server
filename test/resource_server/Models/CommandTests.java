@@ -1,5 +1,9 @@
 package resource_server.Models;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -56,6 +60,40 @@ public class CommandTests
 			throws Exception
 	{
 		Command.parseXML("invalid_xml_string");
+	}
+	
+	@Test
+	public void parseXML_ReturnsValidCommand() throws Exception
+	{
+		Map<CommandParameterName, String> parametersMap = new HashMap<CommandParameterName, String>() {
+			{
+				this.put(CommandParameterName.ResourceName, "resource_name");
+				this.put(CommandParameterName.SessionId, "session_id");
+			}
+		};
+		
+		ICommand testCommand = new Command();
+		
+		testCommand.setCode(CommandCode.Client_Disconnect);
+		
+		for (Entry<CommandParameterName, String> entry : parametersMap
+				.entrySet())
+		{
+			testCommand.setParameter(entry.getKey(), entry.getValue());
+		}
+		
+		ICommand parseCommand = Command.parseXML(testCommand.toXML());
+		
+		Assert.assertEquals(testCommand.getCode(), parseCommand.getCode());
+		
+		for (Entry<CommandParameterName, String> entry : parametersMap
+				.entrySet())
+		{
+			CommandParameterName key = entry.getKey();
+			
+			Assert.assertEquals(testCommand.getParameterValue(key),
+				parseCommand.getParameterValue(key));
+		}
 	}
 	
 	@Test(expected = IllegalArgumentException.class)
