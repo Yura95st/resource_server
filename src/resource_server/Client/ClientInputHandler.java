@@ -53,18 +53,13 @@ public class ClientInputHandler implements Runnable
 			try
 			{
 				this.input.close();
-
-				if (!this.socket.isClosed())
-				{
-					this.socket.close();
-				}
 			}
 			catch (IOException e)
 			{
 				System.err.println(ExceptionHelper.getFullExceptionMessage(e));
 			}
 			
-			System.out.println("Connection lost. Press 'Enter' to exit...");
+			System.out.println("Connection lost.");
 		}
 	}
 	
@@ -100,6 +95,13 @@ public class ClientInputHandler implements Runnable
 				case Server_ResourcesList:
 				{
 					this.printResourcesList(command
+						.getParameterValue(CommandParameterName.ResourcesList));
+					break;
+				}
+				
+				case Server_HeldResourcesList:
+				{
+					this.printHeldResourcesList(command
 						.getParameterValue(CommandParameterName.ResourcesList));
 					break;
 				}
@@ -182,6 +184,28 @@ public class ClientInputHandler implements Runnable
 		{
 			System.out
 					.println(String.format("\t%1$d. %2$s", i++, resourceName));
+		}
+	}
+	
+	private void printHeldResourcesList(String resourcesString)
+	{
+		String[] resourceNames = resourcesString.split("\t");
+		
+		if (resourcesString.isEmpty())
+		{
+			System.out.println("Server: You aren't holding any resources.");
+		}
+		else
+		{
+			System.out.println("Server: Here are the list of resources You're holding:");
+			
+			int i = 1;
+			
+			for (String resourceName : resourceNames)
+			{
+				System.out.println(String.format("\t%1$d. %2$s", i++,
+					resourceName));
+			}
 		}
 	}
 	

@@ -10,6 +10,7 @@ import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.TreeMap;
 
 import resource_server.Enums.ClientUserCommand;
 import resource_server.Enums.CommandCode;
@@ -40,12 +41,14 @@ public class ClientOutputHandler implements Runnable
 		
 		this.active = false;
 		
-		this.helpMap = new HashMap<ClientUserCommand, String>() {
+		this.helpMap = new TreeMap<ClientUserCommand, String>() {
 			{
 				this.put(ClientUserCommand.Disconnect,
 						"To disconnect from server.");
 				this.put(ClientUserCommand.GetResource,
 						"To get the resource from server.");
+				this.put(ClientUserCommand.GetHeldResourcesList,
+						"To get the list of held resources.");
 				this.put(ClientUserCommand.GetResourcesList,
 						"To get the list of server resources.");
 				this.put(ClientUserCommand.GetSessionsList,
@@ -84,10 +87,10 @@ public class ClientOutputHandler implements Runnable
 		{
 			try
 			{
-				this.output.close();
-				
 				if (!this.socket.isClosed())
 				{
+					this.socket.shutdownInput();
+					
 					this.socket.close();
 				}
 			}
@@ -176,6 +179,11 @@ public class ClientOutputHandler implements Runnable
 					ClientUserCommand.ReleaseResource.toString()));
 				return;
 			}
+		}
+		else if (input.equalsIgnoreCase(ClientUserCommand.GetHeldResourcesList
+			.toString()))
+		{
+			command.setCode(CommandCode.Client_GetHeldResourcesList);
 		}
 		else
 		{
