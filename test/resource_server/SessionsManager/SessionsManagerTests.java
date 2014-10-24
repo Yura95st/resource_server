@@ -98,20 +98,6 @@ public class SessionsManagerTests
 		this.sessionsManager.openSession(null);
 	}
 	
-	@Test
-	public void openSession_SessionSuccessfullyOpened() throws Exception
-	{
-		Assert.assertFalse(this.sessionsManager.getOpenedSessions().contains(
-			this.mockedSession));
-
-		this.sessionsManager.openSession(this.mockedSession);
-		
-		Mockito.verify(this.mockedSession).run();
-
-		Assert.assertTrue(this.sessionsManager.getOpenedSessions().contains(
-			this.mockedSession));
-	}
-
 	@Test(expected = IllegalArgumentException.class)
 	public void sendCommandToSession_CommandIsNull_ThrowsIllegalArgumentException()
 		throws Exception
