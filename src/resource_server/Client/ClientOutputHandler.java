@@ -186,20 +186,6 @@ public class ClientOutputHandler implements Runnable
 		this.output.println(command.toXML());
 	}
 	
-	public void clearConsole() throws IOException
-	{
-		String os = System.getProperty("os.name");
-
-        if (os.contains("Windows"))
-        {
-            Runtime.getRuntime().exec("cls");
-        }
-        else
-        {
-            Runtime.getRuntime().exec("clear");
-        }
-	}
-	
 	private void printHelp()
 	{
 		StringBuilder stringBuilder = new StringBuilder();

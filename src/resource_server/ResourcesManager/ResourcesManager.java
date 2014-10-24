@@ -16,7 +16,7 @@ public class ResourcesManager implements IResourcesManager
 {
 	private static ResourcesManager instance = null;
 
-	public static ResourcesManager getInstance()
+	public static synchronized ResourcesManager getInstance()
 	{
 		if (ResourcesManager.instance == null)
 		{
@@ -40,7 +40,7 @@ public class ResourcesManager implements IResourcesManager
 	}
 
 	@Override
-	public IResource getResource(String resourceName)
+	public synchronized IResource getResource(String resourceName)
 			throws ResourceNotFoundException
 	{
 		Guard.isNotNull(resourceName, "resourceName");
@@ -75,7 +75,7 @@ public class ResourcesManager implements IResourcesManager
 	}
 
 	@Override
-	public void holdResource(IResource resource, int sessionId)
+	public synchronized void holdResource(IResource resource, int sessionId)
 			throws ResourceNotFoundException, ResourceIsAlreadyHeldException
 	{
 		if (!this.isResourceFree(resource))

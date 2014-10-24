@@ -22,61 +22,61 @@ import resource_server.SessionsManager.SessionsManager;
 public class Session implements ISession
 {
 	private int id;
-	
+
 	private BufferedReader input;
-	
+
 	private boolean isActive;
-	
+
 	private PrintWriter output;
 
 	private IResourcesManager resourcesManager;
-	
+
 	private ISessionsManager sessionsManager;
 
 	private Socket socket;
-	
+
 	public Session(int id, Socket socket) throws IOException
 	{
 		Guard.isMoreOrEqualToZero(id, "id");
 		Guard.isNotNull(socket, "socket");
-		
+
 		this.id = id;
 		this.socket = socket;
-		
+
 		this.input = new BufferedReader(new InputStreamReader(
 			this.socket.getInputStream()));
-		
+
 		this.output = new PrintWriter(new BufferedWriter(
 			new OutputStreamWriter(this.socket.getOutputStream())), true);
-		
+
 		this.sessionsManager = SessionsManager.getInstance();
-		
+
 		this.resourcesManager = ResourcesManager.getInstance();
-		
+
 		this.isActive = false;
 	}
-	
+
 	@Override
 	public void close() throws IOException
 	{
 		this.socket.close();
-		
+
 		System.out.println("Socket has been closed: " + this.socket);
 	}
-	
+
 	@Override
 	public int getId()
 	{
 		return this.id;
 	}
-	
+
 	@Override
 	public void run()
 	{
 		this.isActive = true;
-		
+
 		this.sendWelcomeCommand();
-		
+
 		try
 		{
 			while (this.isActive)
@@ -87,7 +87,7 @@ public class Session implements ISession
 				{
 					break;
 				}
-				
+
 				this.handleInputFromClient(inputFromClient);
 			}
 		}
@@ -111,14 +111,14 @@ public class Session implements ISession
 	private void handleInputFromClient(String inputFromClient)
 	{
 		Guard.isNotNull(inputFromClient, "inputFromClient");
-
-		//		System.out.println(String.format("Client #%1$d: %2$s", this.id,
-		//			inputFromClient));
 		
+		System.out.println(String.format("Client #%1$d: %2$s", this.id,
+			inputFromClient));
+
 		try
 		{
 			ICommand command = Command.parseXML(inputFromClient);
-			
+
 			switch (command.getCode())
 			{
 				case Client_Disconnect:
@@ -127,39 +127,39 @@ public class Session implements ISession
 					this.isActive = false;
 					break;
 				}
-				
+
 				case Client_GetSessionsList:
 				{
 					this.sendSessionsList();
 					break;
 				}
-				
+
 				case Client_GetResourcesList:
 				{
 					this.sendResourcesList();
 					break;
 				}
-				
+
 				case Client_GetResource:
 				{
 					this.tryToHoldResource(command
 						.getParameterValue(CommandParameterName.ResourceName));
 					break;
 				}
-				
+
 				case Client_ReleaseResource:
 				{
 					this.releaseResource(command
 						.getParameterValue(CommandParameterName.ResourceName));
 					break;
 				}
-				
+
 				case Client_ReleaseAllResources:
 				{
 					this.releaseAllResources();
 					break;
 				}
-				
+
 				default:
 				{
 					this.sendUnknownCommand();
@@ -176,38 +176,38 @@ public class Session implements ISession
 	private void releaseAllResources()
 	{
 		ICommand command = new Command();
-		
+
 		CommandCode code = CommandCode.Server_ResourcesAreReleased;
-		
+
 		this.resourcesManager.releaseSessionResources(this.id);
-		
+
 		command.setCode(code);
-		
+
 		this.sendCommand(command);
 	}
 
 	private void releaseResource(String resourceName)
 	{
 		ICommand command = new Command();
-		
+
 		command.setParameter(CommandParameterName.ResourceName, resourceName);
-		
+
 		CommandCode code = CommandCode.Server_ResourceIsReleased;
-		
+
 		try
 		{
 			IResource resource = this.resourcesManager
 					.getResource(resourceName);
-			
+
 			this.resourcesManager.releaseResource(resource);
 		}
 		catch (ResourceNotFoundException e)
 		{
 			code = CommandCode.Server_ResourceNotFound;
 		}
-		
+
 		command.setCode(code);
-		
+
 		this.sendCommand(command);
 	}
 
@@ -236,7 +236,7 @@ public class Session implements ISession
 		for (IResource resource : this.resourcesManager.getResources())
 		{
 			stringBuilder.append(resource.getName());
-			
+
 			// Divide names with \t character to be able to split them later
 			stringBuilder.append('\t');
 		}
@@ -247,7 +247,7 @@ public class Session implements ISession
 
 		this.sendCommand(command);
 	}
-	
+
 	private void sendSessionsList()
 	{
 		ICommand command = new Command();
@@ -260,8 +260,9 @@ public class Session implements ISession
 		{
 			stringBuilder
 			.append(String.format("Session #%1$d", session.getId()));
-			
-			// Divide session names with \t character to be able to split them later
+
+			// Divide session names with \t character to be able to split them
+			// later
 			stringBuilder.append('\t');
 		}
 
@@ -280,7 +281,7 @@ public class Session implements ISession
 
 		this.sendCommand(command);
 	}
-	
+
 	private void sendWelcomeCommand()
 	{
 		ICommand command = new Command();
@@ -289,20 +290,20 @@ public class Session implements ISession
 
 		this.sendCommand(command);
 	}
-	
+
 	private void tryToHoldResource(String resourceName)
 	{
 		ICommand command = new Command();
-		
+
 		command.setParameter(CommandParameterName.ResourceName, resourceName);
-		
+
 		CommandCode code = CommandCode.Server_ResourceIsHeld;
-		
+
 		try
 		{
 			IResource resource = this.resourcesManager
 					.getResource(resourceName);
-			
+
 			this.resourcesManager.holdResource(resource, this.id);
 		}
 		catch (ResourceNotFoundException e)
@@ -313,9 +314,9 @@ public class Session implements ISession
 		{
 			code = CommandCode.Server_ResourceIsAlreadyHeld;
 		}
-		
+
 		command.setCode(code);
-		
+
 		this.sendCommand(command);
 	}
 }
