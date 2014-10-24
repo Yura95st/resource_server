@@ -15,54 +15,74 @@ import resource_server.Models.Resource;
 public class ResourcesManager implements IResourcesManager
 {
 	private static ResourcesManager instance = null;
-
+	
 	public static synchronized ResourcesManager getInstance()
 	{
 		if (ResourcesManager.instance == null)
 		{
 			ResourcesManager.instance = new ResourcesManager();
 		}
-		
+
 		return ResourcesManager.instance;
 	}
-
+	
 	Map<String, Integer> heldResources;
-
+	
 	Map<String, IResource> resorces;
-
+	
 	protected ResourcesManager()
 	{
 		this.resorces = new HashMap<String, IResource>();
-
+		
 		this.heldResources = new HashMap<String, Integer>();
-
+		
 		this.initResources();
 	}
+	
+	@Override
+	public int getHeldResourceSessionId(IResource resource)
+		throws ResourceNotFoundException
+	{
+		Guard.isNotNull(resource, "resource");
 
+		String resourceName = resource.getName();
+
+		this.checkResourceName(resourceName);
+
+		int sessionId = -1;
+
+		if (this.heldResources.containsKey(resourceName))
+		{
+			sessionId = this.heldResources.get(resourceName);
+		}
+
+		return sessionId;
+	}
+	
 	@Override
 	public synchronized IResource getResource(String resourceName)
-			throws ResourceNotFoundException
+		throws ResourceNotFoundException
 	{
 		Guard.isNotNull(resourceName, "resourceName");
-		
+
 		this.checkResourceName(resourceName);
-		
+
 		return this.resorces.get(resourceName);
 	}
-
+	
 	@Override
 	public List<IResource> getResources()
 	{
 		return new ArrayList<IResource>(this.resorces.values());
 	}
-
+	
 	@Override
 	public List<IResource> getSessionResources(int sessionId)
 	{
 		Guard.isMoreOrEqualToZero(sessionId, "sessionId");
-		
+
 		List<IResource> sessionResources = new ArrayList<IResource>();
-		
+
 		for (Entry<String, Integer> entry : this.heldResources.entrySet())
 		{
 			if (entry.getValue() == sessionId)
@@ -70,13 +90,13 @@ public class ResourcesManager implements IResourcesManager
 				sessionResources.add(this.resorces.get(entry.getKey()));
 			}
 		}
-		
+
 		return sessionResources;
 	}
-
+	
 	@Override
 	public synchronized void holdResource(IResource resource, int sessionId)
-			throws ResourceNotFoundException, ResourceIsAlreadyHeldException
+		throws ResourceNotFoundException, ResourceIsAlreadyHeldException
 	{
 		if (!this.isResourceFree(resource))
 		{
@@ -84,33 +104,33 @@ public class ResourcesManager implements IResourcesManager
 				"Resource with name '%1$s' is already held.",
 				resource.getName()));
 		}
-		
+
 		this.heldResources.put(resource.getName(), sessionId);
 	}
 
 	@Override
 	public boolean isResourceFree(IResource resource)
-			throws ResourceNotFoundException
+		throws ResourceNotFoundException
 	{
 		Guard.isNotNull(resource, "resource");
-		
+
 		String resourceName = resource.getName();
-		
+
 		this.checkResourceName(resourceName);
-		
+
 		return !this.heldResources.containsKey(resourceName);
 	}
-	
+
 	@Override
 	public void releaseResource(IResource resource)
-			throws ResourceNotFoundException
+		throws ResourceNotFoundException
 	{
 		Guard.isNotNull(resource, "resource");
-		
+
 		String resourceName = resource.getName();
-		
+
 		this.checkResourceName(resourceName);
-		
+
 		this.heldResources.remove(resourceName);
 	}
 	
@@ -118,7 +138,7 @@ public class ResourcesManager implements IResourcesManager
 	public void releaseSessionResources(int sessionId)
 	{
 		List<IResource> sessionResources = this.getSessionResources(sessionId);
-		
+
 		for (IResource resource : sessionResources)
 		{
 			try
@@ -133,7 +153,7 @@ public class ResourcesManager implements IResourcesManager
 	}
 
 	private void checkResourceName(String name)
-		throws ResourceNotFoundException
+			throws ResourceNotFoundException
 	{
 		if (!this.resorces.containsKey(name))
 		{
@@ -145,11 +165,11 @@ public class ResourcesManager implements IResourcesManager
 	private void initResources()
 	{
 		int resourcesCount = 10;
-
+		
 		for (int i = 0; i < resourcesCount; i++)
 		{
 			IResource resource = new Resource(String.format("Resource_%1$d", i));
-
+			
 			this.resorces.put(resource.getName(), resource);
 		}
 	}
