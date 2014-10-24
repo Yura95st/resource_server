@@ -339,7 +339,7 @@ public class Session implements ISession
 			command.setCode(CommandCode.Server_ResourceIsRequested);
 			
 			command.setParameter(CommandParameterName.SessionId,
-				Integer.toString(sessionId));
+				Integer.toString(this.id));
 			command.setParameter(CommandParameterName.ResourceName,
 				resource.getName());
 			
