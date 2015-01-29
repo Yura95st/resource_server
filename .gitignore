@@ -69,6 +69,3 @@ local.properties
  
 # PDT-specific
 .buildpath
-
-# Include jar libraries in lib folder
-!lib/**/*.jar
